@@ -1,0 +1,19 @@
+{
+  "name": "HUNG AIM ADMIN",
+  "short_name": "HUNG ADMIN",
+  "description": "HUNG AIM Admin Panel",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#050506",
+  "theme_color": "#ff1744",
+  "icons": [
+    {
+      "src": "1787304901999.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
