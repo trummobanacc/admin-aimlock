@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#ff1744">
+<title>HUNG AIM - ADMIN PANEL</title>
+<style>
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+:root { --neon: #ff1744; --neon2: #ff3d5a; --bg: #050506; --panel: #0d0b0d; --line: #35121a; --muted: #806d73; color-scheme: dark; }
+html, body { margin: 0; min-height: 100vh; font-family: Arial, sans-serif; background: radial-gradient(circle at 50% -10%, #4a0010 0, #090609 35%, #030303 80%); color: #fff; }
+button, input, textarea, select { font: inherit; }
+.header { position: sticky; top: 0; z-index: 500; height: 65px; padding: 0 15px; display: flex; align-items: center; justify-content: space-between; background: #090709ee; border-bottom: 1px solid #35121a; backdrop-filter: blur(10px); }
+.brand { display: flex; align-items: center; gap: 9px; }
+.brandMark { width:37px;height:37px;border-radius:10px;border:1px solid #ff174466;display:grid;place-items:center;color:var(--neon);font-weight:900;background:#1a0509;overflow:hidden}.brandMark img{width:100%;height:100%;object-fit:cover;display:block}
+.brandName { font-size: 14px; font-weight: 900; }
+.status { margin-top: 3px; color: #ff536b; font-size: 9px; }
+.container { width: 100%; max-width: 800px; margin: auto; padding: 20px; display: grid; gap: 20px; }
+.card { padding: 20px; border: 1px solid #32121a; border-radius: 15px; background: #0b080a; box-shadow: 0 0 20px #ff174411; }
+.card-title { font-size: 16px; font-weight: bold; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; color: var(--neon2); border-bottom: 1px solid #32121a; padding-bottom: 10px;}
+.input-group { margin-bottom: 15px; }
+.label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 5px; font-weight: bold;}
+.input { width: 100%; height: 45px; padding: 0 12px; border: 1px solid #46141d; border-radius: 10px; background: #080708; color: #fff; outline: none; transition: 0.2s; }
+.input:focus { border-color: var(--neon); box-shadow: 0 0 10px #ff174440; }
+textarea.input { min-height: 100px; padding: 12px; resize: vertical; }
+select.input { appearance: auto; background-color: #080708; cursor: pointer; }
+.btn { width: 100%; height: 45px; border-radius: 10px; border: 1px solid var(--neon); background: linear-gradient(135deg, var(--neon), #85051e); color: #fff; font-weight: bold; cursor: pointer; transition: 0.2s; box-shadow: 0 0 15px #ff174455; }
+.btn:active { transform: scale(0.98); }
+.sm-btn { height: 35px; padding: 0 15px; border-radius: 8px; border: 1px solid #ff1744; background: #ff174433; color: #fff; font-size: 11px; cursor: pointer; transition: 0.2s; white-space: nowrap;}
+.sm-btn:active { transform: scale(0.95); }
+
+/* Switch Toggle */
+.switch-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; background: #14090c; padding: 15px; border-radius: 10px; border: 1px solid #32121a;}
+.switch { position: relative; width: 50px; height: 26px; flex-shrink: 0; }
+.switch input { display: none; }
+.slider { position: absolute; inset: 0; border-radius: 30px; background: #241b1e; cursor: pointer; transition: .2s; }
+.slider:before { content: ""; position: absolute; width: 20px; height: 20px; left: 3px; top: 3px; border-radius: 50%; background: #786a6f; transition: .2s; }
+.switch input:checked + .slider { background: var(--neon); box-shadow: 0 0 10px #ff174455; }
+.switch input:checked + .slider:before { transform: translateX(24px); background: #fff; }
+
+/* Lists */
+.data-list { display: flex; flex-direction: column; gap: 10px; max-height: 500px; overflow-y: auto; padding-right: 5px;}
+.data-list::-webkit-scrollbar { width: 5px; }
+.data-list::-webkit-scrollbar-thumb { background: #46141d; border-radius: 10px; }
+.list-item { padding: 15px; border: 1px solid #46141d; border-radius: 10px; background: #11080a; }
+.list-item.resolved { border-color: #2e352e; background: #0a110b; opacity: 0.8; }
+.badge { padding: 4px 8px; border-radius: 6px; background: #ff174422; color: var(--neon2); font-size: 10px; font-weight: bold; border: 1px solid #ff174444;}
+.toast { position: fixed; bottom: 20px; right: 20px; padding: 15px 25px; background: var(--neon); color: #fff; border-radius: 10px; font-weight: bold; font-size: 12px; box-shadow: 0 0 20px #ff174466; transform: translateY(100px); opacity: 0; transition: 0.3s; z-index: 9999;}
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* Key Form Grid */
+.key-form { display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 10px; align-items: end; margin-bottom: 20px; }
+@media (max-width: 600px) {
+    .key-form { grid-template-columns: 1fr 1fr; }
+    .key-form .full-col { grid-column: 1 / -1; }
+}
+
+@media (min-width: 768px) {
+    .container { grid-template-columns: 1fr 1fr; }
+    .full-width { grid-column: 1 / -1; }
+}
+
+/* POPUP */
+.adminModal{position:fixed;inset:0;z-index:10000;display:none;align-items:center;justify-content:center;padding:20px;background:#000c}.adminModal.show{display:flex}.adminModalBox{width:min(380px,100%);padding:22px;border:1px solid #ff174466;border-radius:18px;background:#0e090b;box-shadow:0 0 30px #ff174444}.adminModalTitle{font-size:15px;font-weight:900;color:var(--neon2);margin-bottom:7px}.adminModalText{font-size:9px;color:#bcaeb2;line-height:1.6;white-space:pre-wrap}.adminModalActions{display:flex;gap:8px;margin-top:15px}.adminModalActions button{flex:1;height:40px;border-radius:9px;border:1px solid var(--neon);background:var(--neon);color:#fff;font-weight:bold}.adminModalActions .cancel{background:#16090d;border-color:#46141d}.durationGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:12px}.durationGrid .input{height:42px;margin:0;text-align:center}.modalLabel{font-size:8px;color:var(--muted);text-align:center;margin-top:4px}
+</style>
+
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HUNG AIM ADMIN">
+<link rel="icon" type="image/png" sizes="512x512" href="1787304901999.png">
+<link rel="apple-touch-icon" href="1787304901999.png">
+
+</head>
+<body>
+
+<header class="header">
+    <div class="brand">
+        <div class="brandMark"><img src="1787304901999.png" width="512" height="512" alt="HUNG AIM"></div>
+        <div>
+            <div class="brandName">HUNG AIM - ADMIN</div>
+            <div class="status">● QUẢN TRỊ VIÊN</div>
+        </div>
+    </div>
+</header>
+
+<div class="container">
+
+    <!-- Key Management -->
+    <div class="card full-width">
+        <div class="card-title">🔑 QUẢN LÝ KEY & CẤP QUYỀN</div>
+        
+        <div class="key-form">
+            <div class="input-group full-col" style="margin-bottom: 0;">
+                <label class="label">Mã Key (để trống sẽ tự động tạo)</label>
+                <input id="newKeyName" class="input" placeholder="VD: HUNG-VIP-1234">
+            </div>
+            <div class="input-group" style="margin-bottom: 0;">
+                <label class="label">Loại Key</label>
+                <select id="newKeyType" class="input">
+                    <option value="FREE">FREE</option>
+                    <option value="VIP">VIP</option>
+                </select>
+            </div>
+            <div class="input-group" style="margin-bottom: 0;">
+                <label class="label">Số ngày</label>
+                <input id="newKeyDays" type="number" class="input" placeholder="Ngày" min="1" value="7">
+            </div>
+            <button class="btn full-col" onclick="createKey()">TẠO KEY</button>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0 10px 0;">
+            <span style="font-size: 13px; font-weight: bold; color: var(--muted);">DANH SÁCH KEY HOẠT ĐỘNG</span>
+            <input id="searchKey" class="input" placeholder="Tìm kiếm key..." onkeyup="filterKeys()" style="height: 30px; font-size: 11px; width: 150px;">
+        </div>
+
+        <div class="data-list" id="keysList" style="max-height: 400px;">
+            <p style="color:var(--muted); font-size: 12px; text-align: center; padding: 20px;">Đang tải dữ liệu...</p>
+        </div>
+    </div>
+
+    <!-- Server Maintenance -->
+    <div class="card">
+        <div class="card-title">🛠️ BẢO TRÌ MÁY CHỦ</div>
+        <div class="switch-row">
+            <div>
+                <strong style="font-size: 13px;">Kích hoạt bảo trì</strong>
+                <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">Ngăn người dùng truy cập web</div>
+            </div>
+            <label class="switch">
+                <input id="maintenanceToggle" type="checkbox">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="input-group">
+            <label class="label">Nội dung thông báo bảo trì</label>
+            <textarea id="maintenanceMsg" class="input" placeholder="Hệ thống đang được bảo trì. Vui lòng quay lại sau."></textarea>
+        </div>
+        <button class="btn" onclick="saveMaintenance()">LƯU CÀI ĐẶT</button>
+    </div>
+
+    <!-- Notifications -->
+    <div class="card">
+        <div class="card-title">🔔 GỬI THÔNG BÁO</div>
+        <div class="input-group">
+            <label class="label">Tiêu đề thông báo</label>
+            <input id="notifTitle" class="input" placeholder="VD: THÔNG BÁO ADMIN" maxlength="50">
+        </div>
+        <div class="input-group">
+            <label class="label">Nội dung</label>
+            <textarea id="notifMsg" class="input" placeholder="Nhập nội dung cần thông báo đến người dùng..."></textarea>
+        </div>
+        <button class="btn" onclick="sendNotif()">GỬI THÔNG BÁO</button>
+    </div>
+
+    <!-- Complaints -->
+    <div class="card full-width">
+        <div class="card-title" style="justify-content: space-between;">
+            <span>📝 KHIẾU NẠI CỦA NGƯỜI DÙNG</span>
+            <span id="complaintsCount" class="badge" style="background:#fff2;color:#fff;border-color:#fff4">0 chờ xử lý</span>
+        </div>
+        <div class="data-list" id="complaintsList">
+            <p style="color:var(--muted); font-size: 12px; text-align: center; padding: 20px;">Đang tải dữ liệu...</p>
+        </div>
+    </div>
+</div>
+
+<div id="adminModal" class="adminModal"><div class="adminModalBox"><div id="adminModalTitle" class="adminModalTitle">Thông báo</div><div id="adminModalText" class="adminModalText"></div><div id="durationFields" class="durationGrid hidden"><div><input id="addDays" type="number" min="0" class="input" value="0"><div class="modalLabel">NGÀY</div></div><div><input id="addHours" type="number" min="0" class="input" value="0"><div class="modalLabel">GIỜ</div></div><div><input id="addMinutes" type="number" min="0" class="input" value="0"><div class="modalLabel">PHÚT</div></div><div><input id="addSeconds" type="number" min="0" class="input" value="0"><div class="modalLabel">GIÂY</div></div></div><div class="adminModalActions"><button id="adminModalCancel" class="cancel">ĐÓNG</button><button id="adminModalOk">XÁC NHẬN</button></div></div></div><div id="toast" class="toast">Thành công!</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+import { getDatabase, ref, onValue, push, set, update, remove } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyD51LwWlV5qV-RjD7HCFSqWtyucdh-V21Y",
+    authDomain: "admin-53f18.firebaseapp.com",
+    databaseURL: "https://admin-53f18-default-rtdb.firebaseio.com",
+    projectId: "admin-53f18",
+    storageBucket: "admin-53f18.firebasestorage.app",
+    messagingSenderId: "745621699049",
+    appId: "1:745621699049:web:3c9cef5c5b572df9987378",
+    measurementId: "G-H7BZ2J790S"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// TOAST NOTIFICATION
+function showToast(msg) {
+    const toast=document.getElementById('toast');
+    toast.textContent=msg; toast.classList.add('show');
+    setTimeout(()=>toast.classList.remove('show'),3000);
+}
+let modalResolve=null;
+function showAdminPopup(title,text,options={}) {
+    document.getElementById('adminModalTitle').textContent=title;
+    document.getElementById('adminModalText').textContent=text||'';
+    document.getElementById('durationFields').classList.toggle('hidden',!options.duration);
+    document.getElementById('adminModalCancel').style.display=options.confirm?'block':'none';
+    document.getElementById('adminModalOk').textContent=options.okText||'XÁC NHẬN';
+    document.getElementById('adminModal').classList.add('show');
+    return new Promise(resolve=>modalResolve=resolve);
+}
+function closeAdminPopup(result=false){
+    document.getElementById('adminModal').classList.remove('show');
+    if(modalResolve){const r=modalResolve;modalResolve=null;r(result);}
+}
+document.getElementById('adminModalCancel').onclick=()=>closeAdminPopup(false);
+document.getElementById('adminModalOk').onclick=()=>closeAdminPopup(true);
+
+// 1. TÍNH NĂNG QUẢN LÝ KEY (Tạo, Sửa, Xóa)
+let globalKeysData = {};
+
+onValue(ref(db, "keys"), snap => {
+    globalKeysData = snap.val() || {};
+    renderKeys();
+});
+
+function renderKeys(filterStr = '') {
+    const keysList = document.getElementById('keysList');
+    keysList.innerHTML = '';
+    
+    if (Object.keys(globalKeysData).length === 0) {
+        keysList.innerHTML = '<p style="color:var(--muted); font-size: 12px; text-align: center; padding: 20px;">Chưa có key nào trên hệ thống.</p>';
+        return;
+    }
+
+    const now = Date.now();
+    let arr = Object.keys(globalKeysData).map(k => ({ id: k, ...globalKeysData[k] }));
+    
+    if (filterStr) {
+        arr = arr.filter(k => k.id.toLowerCase().includes(filterStr.toLowerCase()));
+    }
+    
+    // Sắp xếp: Mới nhất lên đầu
+    arr.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    
+    arr.forEach(k => {
+        const div = document.createElement('div');
+        div.className = 'list-item';
+        
+        const isExpired = now > k.expiresAt;
+        const expDate = new Date(k.expiresAt).toLocaleString('vi-VN');
+        const badgeColor = k.type === 'VIP' ? '#ffaa00' : '#00aaff';
+        
+        div.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div>
+                    <strong style="color: #fff; font-size: 14px; letter-spacing: 1px;">${k.id}</strong> 
+                    <span class="badge" style="background: ${badgeColor}22; color: ${badgeColor}; border-color: ${badgeColor}55; margin-left: 5px;">${k.type}</span>
+                    <div style="font-size: 11px; color: ${isExpired ? '#ff536b' : 'var(--muted)'}; margin-top: 5px;">
+                        Hết hạn: ${expDate} ${isExpired ? '<b>(Đã hết hạn)</b>' : ''}
+                    </div><div style="font-size:10px;color:var(--muted);margin-top:4px;">${k.active===false||k.locked===true?"🔒 Đã khóa":"🟢 Hoạt động"} · ${k.deviceId?"📱 Đã liên kết":"📱 Chưa liên kết"}</div>
+                </div>
+                <div style="display: flex; gap: 5px;">
+                    <button class="sm-btn" onclick="addTimeKey('${k.id}')" style="background:#0a3a2a; border-color:#166a4f; color:#4ade80;">⏱️ +Ngày</button>
+                    <button class="sm-btn" onclick="toggleKeyLock('${k.id}')" style="background:#2a1010; border-color:#7a2530; color:#ff9aaa;">${k.active===false||k.locked===true?'🔓 Mở khóa':'🔒 Khóa'}</button>
+                    <button class="sm-btn" onclick="resetDevice('${k.id}')" style="background:#101a2a; border-color:#254f7a; color:#7dc4ff;">📱 Thiết bị</button>
+                    <button class="sm-btn" onclick="deleteKey('${k.id}')" style="background:#4a0010; border-color:#631021; color:#ff9aaa;">🗑️ Xóa</button>
+                </div>
+            </div>
+        `;
+        keysList.appendChild(div);
+    });
+}
+
+window.filterKeys = () => {
+    const val = document.getElementById('searchKey').value.trim();
+    renderKeys(val);
+};
+
+window.createKey = () => {
+    let keyName = document.getElementById('newKeyName').value.trim();
+    if (!keyName) {
+        // Tạo key ngẫu nhiên nếu để trống
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        keyName = 'HUNG-';
+        for (let i = 0; i < 8; i++) keyName += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    
+    // Kiểm tra xem key đã tồn tại chưa
+    if (globalKeysData[keyName]) {
+        showToast('⚠️ Lỗi: Mã key này đã tồn tại!');
+        return;
+    }
+
+    const type = document.getElementById('newKeyType').value;
+    const days = parseInt(document.getElementById('newKeyDays').value) || 1;
+    const expiresAt = Date.now() + (days * 24 * 60 * 60 * 1000);
+    
+    set(ref(db, "keys/" + keyName), {
+        type: type,
+        expiresAt: expiresAt,
+        active: true,
+        locked: false,
+        deviceId: null,
+        createdAt: Date.now()
+    }).then(() => {
+        showToast('✅ Đã tạo thành công key: ' + keyName);
+        document.getElementById('newKeyName').value = '';
+    }).catch(e => showToast('❌ Lỗi: ' + e.message));
+};
+
+window.toggleKeyLock=(key)=>{const cur=globalKeysData[key];if(!cur)return;const locked=cur.active===false||cur.locked===true;update(ref(db,"keys/"+key),{active:locked,locked:!locked}).then(()=>showToast(locked?"🔓 Đã mở khóa key!":"🔒 Đã khóa key!"));};
+window.resetDevice=async(key)=>{const cur=globalKeysData[key];if(!cur||!cur.deviceId){showToast("ℹ️ Key chưa liên kết thiết bị.");return;}const ok=await showAdminPopup("📱 GỠ THIẾT BỊ","Gỡ thiết bị đang liên kết với key này?",{confirm:true,okText:"GỠ THIẾT BỊ"});if(ok){update(ref(db,"keys/"+key),{deviceId:null}).then(()=>showToast("📱 Đã gỡ liên kết thiết bị!")).catch(e=>showAdminPopup("❌ LỖI",e.message||"Không thể gỡ thiết bị.",{okText:"ĐÓNG"}));}};
+window.deleteKey=async(key)=>{const ok=await showAdminPopup("🗑️ XÓA KEY","Xóa vĩnh viễn key: "+key+"?",{confirm:true,okText:"XÓA"});if(ok)remove(ref(db,"keys/"+key)).then(()=>showToast("🗑️ Đã xóa key!"));};
+
+window.addTimeKey=async(key)=>{
+    const currentData=globalKeysData[key]; if(!currentData)return;
+    document.getElementById('addDays').value=0;document.getElementById('addHours').value=0;document.getElementById('addMinutes').value=0;document.getElementById('addSeconds').value=0;
+    const ok=await showAdminPopup('⏱️ GIA HẠN KEY','Nhập thời gian muốn cộng thêm.',{duration:true,confirm:true,okText:'GIA HẠN'});
+    if(!ok)return;
+    const d=Math.max(0,parseInt(document.getElementById('addDays').value)||0),h=Math.max(0,parseInt(document.getElementById('addHours').value)||0),m=Math.max(0,parseInt(document.getElementById('addMinutes').value)||0),s=Math.max(0,parseInt(document.getElementById('addSeconds').value)||0);
+    const total=(d*86400+h*3600+m*60+s)*1000;
+    if(total<=0){await showAdminPopup('⚠️ THỜI GIAN KHÔNG HỢP LỆ','Hãy nhập ít nhất một giá trị lớn hơn 0.',{okText:'OK'});return;}
+    const currentExp=Number(currentData.expiresAt)||Date.now(),baseTime=currentExp<Date.now()?Date.now():currentExp;
+    update(ref(db,'keys/'+key),{expiresAt:baseTime+total}).then(()=>showToast(`✅ Đã gia hạn ${d} ngày ${h} giờ ${m} phút ${s} giây!`)).catch(e=>showAdminPopup('❌ LỖI',e.message||'Không thể gia hạn key.',{okText:'ĐÓNG'}));
+};
+
+// 2. TÍNH NĂNG BẢO TRÌ
+const maintenanceToggle = document.getElementById('maintenanceToggle');
+const maintenanceMsg = document.getElementById('maintenanceMsg');
+
+onValue(ref(db, "settings/maintenance"), snap => {
+    const v = snap.val();
+    if (v) {
+        maintenanceToggle.checked = v.enabled === true || v === true;
+        if (v.message) maintenanceMsg.value = v.message;
+    }
+});
+
+window.saveMaintenance = () => {
+    set(ref(db, "settings/maintenance"), {
+        enabled: maintenanceToggle.checked,
+        message: maintenanceMsg.value.trim() || "Hệ thống đang được bảo trì. Vui lòng quay lại sau."
+    }).then(() => showToast('✅ Đã lưu trạng thái bảo trì!'))
+      .catch(e => showToast('❌ Lỗi: ' + e.message));
+};
+
+// 3. TÍNH NĂNG THÔNG BÁO
+window.sendNotif = () => {
+    const title = document.getElementById('notifTitle').value.trim();
+    const msg = document.getElementById('notifMsg').value.trim();
+    
+    if (!title || !msg) {
+        showToast('⚠️ Vui lòng nhập đủ tiêu đề và nội dung');
+        return;
+    }
+
+    push(ref(db, "notifications"), {
+        title: title,
+        message: msg,
+        createdAt: Date.now(),
+        active: true
+    }).then(() => {
+        showToast('✅ Đã gửi thông báo đến máy chủ!');
+        document.getElementById('notifTitle').value = '';
+        document.getElementById('notifMsg').value = '';
+    }).catch(e => showToast('❌ Lỗi gửi thông báo: ' + e.message));
+};
+
+// 4. TÍNH NĂNG KHIẾU NẠI
+const complaintsList = document.getElementById('complaintsList');
+const complaintsCount = document.getElementById('complaintsCount');
+
+onValue(ref(db, "complaints"), snap => {
+    complaintsList.innerHTML = '';
+    if (!snap.exists()) {
+        complaintsList.innerHTML = '<p style="color:var(--muted); font-size: 12px; text-align: center; padding: 20px;">Không có khiếu nại nào.</p>';
+        complaintsCount.textContent = '0 chờ xử lý';
+        return;
+    }
+    
+    const data = snap.val();
+    const arr = Object.keys(data).map(k => ({ id: k, ...data[k] }))
+                                 .sort((a, b) => b.createdAt - a.createdAt);
+    let pending = 0;
+
+    arr.forEach(c => {
+        if(c.status !== 'resolved') pending++;
+        
+        const div = document.createElement('div');
+        div.className = 'list-item ' + (c.status === 'resolved' ? 'resolved' : '');
+        const dateStr = new Date(c.createdAt).toLocaleString('vi-VN');
+        
+        div.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                <div>
+                    <strong style="color: #fff;">🧑‍💻 ${c.name}</strong> 
+                    <span style="color: var(--muted); font-size: 12px; margin-left: 10px;">• Key: </span>
+                    <span class="badge">${c.key || 'Không có'}</span>
+                </div>
+                <div style="font-size: 11px; color: var(--muted);">${dateStr}</div>
+            </div>
+            <div style="font-size: 11px; color: #ff536b; margin-bottom: 10px; font-weight: bold;">
+                Trạng thái: ${c.status === 'resolved' ? '<span style="color:#00ff66">✓ Đã xử lý</span>' : '⏳ Chờ xử lý'}
+            </div>
+            <div style="background: #0004; padding: 12px; border-radius: 8px; font-size: 13px; line-height: 1.5; margin-bottom: 12px;">
+                ${c.message.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
+            </div>
+            <div style="display: flex; gap: 10px;">
+                ${c.status !== 'resolved' 
+                    ? `<button class="sm-btn" onclick="resolveComplaint('${c.id}')">✓ Đánh dấu đã xử lý</button>` 
+                    : ``}
+                <button class="sm-btn" onclick="deleteComplaint('${c.id}')" style="background:#4a0010; border-color:#631021; color:#ff9aaa;">🗑️ Xóa</button>
+            </div>
+        `;
+        complaintsList.appendChild(div);
+    });
+
+    complaintsCount.textContent = pending + ' chờ xử lý';
+});
+
+window.resolveComplaint = (id) => {
+    update(ref(db, "complaints/" + id), { status: 'resolved' })
+        .then(() => showToast('✅ Đã cập nhật trạng thái!'));
+};
+
+window.deleteComplaint=async(id)=>{const ok=await showAdminPopup("🗑️ XÓA KHIẾU NẠI","Bạn có chắc chắn muốn xóa vĩnh viễn khiếu nại này?",{confirm:true,okText:"XÓA"});if(ok)remove(ref(db,"complaints/"+id)).then(()=>showToast("🗑️ Đã xóa khiếu nại!"));};
+</script>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js")
+      .catch(err => console.error("Service Worker:", err));
+  });
+}
+</script>
+
+</body>
+</html>
